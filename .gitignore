@@ -24,3 +24,7 @@ Homestead.yaml
 Thumbs.db
 diff.patch
 
+# Coverage and build artifacts
+/build
+/build/*
+!build/.gitkeep
