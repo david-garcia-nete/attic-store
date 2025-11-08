@@ -2,8 +2,8 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
-         colors="true"
->
+         colors="true">
+
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
@@ -12,11 +12,34 @@
             <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
+
     <source>
         <include>
             <directory>app</directory>
+            <!-- <directory>src</directory> uncomment if you have domain code in src/ -->
         </include>
+        <exclude>
+            <directory>bootstrap</directory>
+            <directory>config</directory>
+            <directory>database</directory>
+            <directory>public</directory>
+            <directory>resources</directory>
+            <directory>routes</directory>
+            <directory>storage</directory>
+            <directory>tests</directory>
+            <directory>vendor</directory>
+        </exclude>
     </source>
+
+    <coverage pathCoverage="false">
+        <report>
+            <text outputFile="-" showUncoveredFiles="false" showOnlySummary="false" />
+            <html outputDirectory="build/coverage" lowUpperBound="50" highLowerBound="90" />
+            <clover outputFile="build/logs/clover.xml" />
+            <cobertura outputFile="build/logs/cobertura.xml" />
+        </report>
+    </coverage>
+
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

@@ -7,7 +7,7 @@ on:
 
 jobs:
   phpunit:
-    name: PHP 8.3 • SQLite + Vite Build
+    name: PHP 8.3 • SQLite + Vite Build + Coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,7 @@ jobs:
         with:
           php-version: '8.3'
           extensions: mbstring, intl, pdo_sqlite, sqlite3
-          coverage: none
+          coverage: pcov            # Enable coverage collection (pcov is fast)
           tools: composer:v2
 
       - name: Cache Composer
@@ -56,5 +56,19 @@ jobs:
       # - name: Run migrations
       #   run: php artisan migrate --force
 
-      - name: Run test suite
-        run: php artisan test --parallel --ansi
+      - name: Run test suite with coverage
+        run: php artisan test --ansi --coverage --coverage-clover=build/logs/clover.xml --coverage-html=build/coverage
+
+      - name: Upload HTML coverage (optional artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: build/coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/logs/clover.xml
+          flags: phpunit
+          fail_ci_if_error: true
