@@ -1,0 +1,60 @@
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  phpunit:
+    name: PHP 8.3 • SQLite + Vite Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, pdo_sqlite, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+            vendor
+          key: composer-${{ runner.os }}-php8.3-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-php8.3-
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Vite assets
+        run: npm run build
+
+      - name: Prepare environment
+        run: |
+          php -r "file_exists('.env') || copy('.env.example', '.env');"
+          php artisan key:generate --ansi
+
+      # Optional: uncomment if you have tests that don't use RefreshDatabase
+      # - name: Run migrations
+      #   run: php artisan migrate --force
+
+      - name: Run test suite
+        run: php artisan test --parallel --ansi
