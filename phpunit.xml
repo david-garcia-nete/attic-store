@@ -31,12 +31,11 @@
         </exclude>
     </source>
 
-    <coverage processUncoveredFiles="true" pathCoverage="false">
+    <coverage pathCoverage="false">
         <report>
             <text outputFile="-" showUncoveredFiles="false" showOnlySummary="false" />
             <html outputDirectory="build/coverage" lowUpperBound="50" highLowerBound="90" />
             <clover outputFile="build/logs/clover.xml" />
-            <!-- Optional for some CI tools: -->
             <cobertura outputFile="build/logs/cobertura.xml" />
         </report>
     </coverage>

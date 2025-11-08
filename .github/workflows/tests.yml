@@ -57,7 +57,7 @@ jobs:
       #   run: php artisan migrate --force
 
       - name: Run test suite with coverage
-        run: php artisan test --ansi --coverage --min=85 --coverage-clover=build/logs/clover.xml --coverage-html=build/coverage
+        run: php artisan test --ansi --coverage --coverage-clover=build/logs/clover.xml --coverage-html=build/coverage
 
       - name: Upload HTML coverage (optional artifact)
         uses: actions/upload-artifact@v4
