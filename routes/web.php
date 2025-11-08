@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StorefrontController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Storefront routes
+Route::get('/', [StorefrontController::class, 'home'])->name('home');
+Route::get('/products', [StorefrontController::class, 'index'])->name('products.index');
+Route::get('/product/{slug}', [StorefrontController::class, 'show'])->name('products.show');
 
+// Dashboard & Profile (Breeze)
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
