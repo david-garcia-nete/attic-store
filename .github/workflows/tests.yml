@@ -7,7 +7,7 @@ on:
 
 jobs:
   phpunit:
-    name: PHP 8.3 • SQLite
+    name: PHP 8.3 • SQLite + Vite Build
     runs-on: ubuntu-latest
 
     steps:
@@ -32,16 +32,27 @@ jobs:
           restore-keys: |
             composer-${{ runner.os }}-php8.3-
 
-      - name: Install dependencies
+      - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Vite assets
+        run: npm run build
 
       - name: Prepare environment
         run: |
           php -r "file_exists('.env') || copy('.env.example', '.env');"
           php artisan key:generate --ansi
 
-      # Migrations will be run automatically when tests use RefreshDatabase.
-      # If some tests don't, uncomment this:
+      # Optional: uncomment if you have tests that don't use RefreshDatabase
       # - name: Run migrations
       #   run: php artisan migrate --force
 
