@@ -35,3 +35,19 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Admin routes (minimal for tests)
+Route::prefix('admin')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Orders
+    Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'update'])->name('orders.update');
+    Route::post('/orders/{order}/fulfill', [\App\Http\Controllers\Admin\OrderFulfillmentController::class, 'fulfill'])->name('admin.orders.fulfill');
+
+    // Product variants
+    Route::post('/variants', [\App\Http\Controllers\Admin\ProductVariantController::class, 'store'])->name('admin.variants.store');
+    Route::post('/variants/{variant}', [\App\Http\Controllers\Admin\ProductVariantController::class, 'update'])->name('admin.variants.update');
+    Route::delete('/variants/{variant}', [\App\Http\Controllers\Admin\ProductVariantController::class, 'destroy'])->name('admin.variants.destroy');
+});
