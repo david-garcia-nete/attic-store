@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/david-garcia-nete/attic-store/graph/badge.svg?token=4JE9GRD5KR)](https://codecov.io/gh/david-garcia-nete/attic-store)
+
 # Attic Store — Laravel E‑Commerce Overlay
 
 This is an overlay (app code only) for a fresh **Laravel 11** project.
