@@ -28,3 +28,5 @@ diff.patch
 /build
 /build/*
 !build/.gitkeep
+
+- #junie test report file
