@@ -40,4 +40,14 @@ class StorefrontTest extends TestCase
         $resp->assertSee('Red Wool Hat');
         $resp->assertDontSee('Blue Cotton Scarf');
     }
+
+    public function test_product_show_page_displays_product(): void
+    {
+        $product = Product::factory()->create(['slug' => 'my-slug', 'is_active' => true]);
+        ProductVariant::factory()->for($product)->create();
+
+        $resp = $this->get(route('products.show', ['slug' => 'my-slug']));
+        $resp->assertOk();
+        $resp->assertSee($product->name);
+    }
 }
