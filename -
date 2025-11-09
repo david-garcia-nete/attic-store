@@ -1,12 +1,12 @@
 
 
 [1;37;40mCode Coverage Report:      [0m
-[1;37;40m  2025-11-09 04:25:44      [0m
+[1;37;40m  2025-11-09 17:41:48      [0m
 [1;37;40m                           [0m
 [1;37;40m Summary:                  [0m
-[30;42m  Classes: 94.59% (35/37)  [0m
-[30;42m  Methods: 96.25% (77/80)  [0m
-[30;42m  Lines:   92.54% (310/335)[0m
+[30;42m  Classes: 97.30% (36/37)  [0m
+[30;42m  Methods: 97.50% (78/80)  [0m
+[30;42m  Lines:   99.41% (336/338)[0m
 
 App\Http\Controllers\Admin\DashboardController
   [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  6/  6)[0m
@@ -35,11 +35,11 @@ App\Http\Controllers\Auth\PasswordResetLinkController
 App\Http\Controllers\Auth\RegisteredUserController
   [30;42mMethods: 100.00% ( 2/ 2)[0m   [30;42mLines: 100.00% ( 14/ 14)[0m
 App\Http\Controllers\Auth\VerifyEmailController
-  [37;41mMethods:   0.00% ( 0/ 1)[0m   [30;43mLines:  80.00% (  4/  5)[0m
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  5/  5)[0m
 App\Http\Controllers\CartController
   [30;42mMethods: 100.00% ( 4/ 4)[0m   [30;42mLines: 100.00% ( 13/ 13)[0m
 App\Http\Controllers\CheckoutController
-  [30;43mMethods:  60.00% ( 3/ 5)[0m   [37;41mLines:  17.24% (  5/ 29)[0m
+  [30;43mMethods:  60.00% ( 3/ 5)[0m   [30;42mLines:  93.75% ( 30/ 32)[0m
 App\Http\Controllers\ProfileController
   [30;42mMethods: 100.00% ( 3/ 3)[0m   [30;42mLines: 100.00% ( 17/ 17)[0m
 App\Http\Controllers\StorefrontController
