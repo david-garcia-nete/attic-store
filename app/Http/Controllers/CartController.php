@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{ProductVariant};
+use App\Models\{ProductVariant, CartItem};
 use App\Services\CartService;
 
 class CartController extends Controller
@@ -19,6 +19,15 @@ class CartController extends Controller
         $cart = $svc->resolve($r)->load('items.variant.product');
         $totals = $svc->totals($cart);
         return view('cart/view', compact('cart','totals'));
+    }
+
+    public function remove(Request $r, CartService $svc, CartItem $item) {
+        $cart = $svc->resolve($r);
+        if ($item->cart_id !== $cart->id) {
+            abort(404);
+        }
+        $item->delete();
+        return redirect()->route('cart.view')->with('ok','Removed from cart');
     }
 
     public function applyDiscount() {
