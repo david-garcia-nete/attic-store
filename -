@@ -1,0 +1,74 @@
+
+
+[1;37;40mCode Coverage Report:      [0m
+[1;37;40m  2025-11-09 03:22:13      [0m
+[1;37;40m                           [0m
+[1;37;40m Summary:                  [0m
+[30;43m  Classes: 56.76% (21/37)  [0m
+[30;43m  Methods: 73.75% (59/80)  [0m
+[30;43m  Lines:   83.28% (279/335)[0m
+
+App\Http\Controllers\Admin\DashboardController
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  6/  6)[0m
+App\Http\Controllers\Admin\OrderController
+  [30;42mMethods: 100.00% ( 3/ 3)[0m   [30;42mLines: 100.00% (  6/  6)[0m
+App\Http\Controllers\Admin\OrderFulfillmentController
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  5/  5)[0m
+App\Http\Controllers\Admin\ProductController
+  [30;43mMethods:  66.67% ( 4/ 6)[0m   [30;43mLines:  84.62% ( 11/ 13)[0m
+App\Http\Controllers\Admin\ProductVariantController
+  [30;42mMethods: 100.00% ( 3/ 3)[0m   [30;42mLines: 100.00% ( 25/ 25)[0m
+App\Http\Controllers\Auth\AuthenticatedSessionController
+  [30;42mMethods: 100.00% ( 3/ 3)[0m   [30;42mLines: 100.00% (  8/  8)[0m
+App\Http\Controllers\Auth\ConfirmablePasswordController
+  [30;42mMethods: 100.00% ( 2/ 2)[0m   [30;42mLines: 100.00% ( 10/ 10)[0m
+App\Http\Controllers\Auth\EmailVerificationPromptController
+  [37;41mMethods:   0.00% ( 0/ 1)[0m   [30;43mLines:  66.67% (  2/  3)[0m
+App\Http\Controllers\Auth\NewPasswordController
+  [30;42mMethods: 100.00% ( 2/ 2)[0m   [30;42mLines: 100.00% ( 20/ 20)[0m
+App\Http\Controllers\Auth\PasswordController
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  8/  8)[0m
+App\Http\Controllers\Auth\PasswordResetLinkController
+  [30;42mMethods: 100.00% ( 2/ 2)[0m   [30;42mLines: 100.00% ( 11/ 11)[0m
+App\Http\Controllers\Auth\RegisteredUserController
+  [30;42mMethods: 100.00% ( 2/ 2)[0m   [30;42mLines: 100.00% ( 14/ 14)[0m
+App\Http\Controllers\Auth\VerifyEmailController
+  [37;41mMethods:   0.00% ( 0/ 1)[0m   [30;43mLines:  80.00% (  4/  5)[0m
+App\Http\Controllers\CartController
+  [37;41mMethods:  25.00% ( 1/ 4)[0m   [30;43mLines:  61.54% (  8/ 13)[0m
+App\Http\Controllers\CheckoutController
+  [37;41mMethods:  40.00% ( 2/ 5)[0m   [37;41mLines:  13.79% (  4/ 29)[0m
+App\Http\Controllers\ProfileController
+  [30;42mMethods: 100.00% ( 3/ 3)[0m   [30;42mLines: 100.00% ( 17/ 17)[0m
+App\Http\Controllers\StorefrontController
+  [30;43mMethods:  66.67% ( 2/ 3)[0m   [30;43mLines:  77.78% (  7/  9)[0m
+App\Http\Requests\Auth\LoginRequest
+  [30;43mMethods:  80.00% ( 4/ 5)[0m   [30;43mLines:  65.22% ( 15/ 23)[0m
+App\Http\Requests\ProfileUpdateRequest
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% ( 11/ 11)[0m
+App\Models\Cart
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  1/  1)[0m
+App\Models\CartItem
+  [37;41mMethods:  50.00% ( 1/ 2)[0m   [37;41mLines:  50.00% (  1/  2)[0m
+App\Models\Inventory
+  [30;43mMethods:  66.67% ( 2/ 3)[0m   [30;42mLines:  90.91% ( 10/ 11)[0m
+App\Models\Order
+  [30;42mMethods: 100.00% ( 4/ 4)[0m   [30;42mLines: 100.00% (  4/  4)[0m
+App\Models\OrderItem
+  [37;41mMethods:  50.00% ( 1/ 2)[0m   [37;41mLines:  50.00% (  1/  2)[0m
+App\Models\Product
+  [37;41mMethods:  50.00% ( 1/ 2)[0m   [37;41mLines:  50.00% (  1/  2)[0m
+App\Models\ProductVariant
+  [30;42mMethods: 100.00% ( 3/ 3)[0m   [30;42mLines: 100.00% (  3/  3)[0m
+App\Models\User
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  4/  4)[0m
+App\Providers\AppServiceProvider
+  [30;42mMethods: 100.00% ( 2/ 2)[0m   [30;42mLines: 100.00% (  2/  2)[0m
+App\Services\CartService
+  [30;42mMethods: 100.00% ( 3/ 3)[0m   [30;42mLines: 100.00% ( 20/ 20)[0m
+App\Services\CheckoutService
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% ( 38/ 38)[0m
+App\View\Components\AppLayout
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  1/  1)[0m
+App\View\Components\GuestLayout
+  [30;42mMethods: 100.00% ( 1/ 1)[0m   [30;42mLines: 100.00% (  1/  1)[0m
