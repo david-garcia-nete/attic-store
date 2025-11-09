@@ -44,6 +44,23 @@ class AdminProductsTest extends TestCase
         $resp->assertSee('/admin/products/'.$p1->id.'/edit', false);
     }
 
+    public function test_create_screen_renders(): void
+    {
+        $resp = $this->get(route('products.create'));
+        $resp->assertOk();
+        $resp->assertSee('Create Product');
+    }
+
+    public function test_edit_screen_renders_with_product_name(): void
+    {
+        $product = Product::factory()->create(['name' => 'Sample Item']);
+
+        $resp = $this->get(route('products.edit', $product));
+        $resp->assertOk();
+        $resp->assertSee('Edit Product');
+        $resp->assertSee('Sample Item');
+    }
+
     public function test_store_creates_product_and_redirects_to_edit(): void
     {
         $payload = [
