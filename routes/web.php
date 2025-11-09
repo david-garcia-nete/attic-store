@@ -15,6 +15,7 @@ Route::get('/product/{slug}', [StorefrontController::class, 'show'])->name('prod
 Route::post('/cart', [CartController::class, 'add'])->name('cart.add');
 Route::get('/cart', [CartController::class, 'view'])->name('cart.view');
 Route::delete('/cart/items/{item}', [CartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/discount', [CartController::class, 'applyDiscount'])->name('cart.discount');
 
 // Checkout routes (minimal for tests)
 Route::get('/checkout', [CheckoutController::class, 'start'])->name('checkout.start');
