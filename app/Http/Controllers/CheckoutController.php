@@ -22,7 +22,9 @@ class CheckoutController extends Controller
 
     public function payWithStripe(Request $r, CheckoutService $svc) {
         [$order, $amount] = $svc->createPendingOrder($r);
-        $stripe = new StripeClient(config('cashier.secret', env('STRIPE_SECRET')));
+        $stripe = app()->bound(StripeClient::class)
+            ? app(StripeClient::class)
+            : new StripeClient(config('cashier.secret', env('STRIPE_SECRET')));
         $intent = $stripe->paymentIntents->create([
             'amount' => (int)round($amount * 100),
             'currency' => 'usd',
@@ -37,8 +39,9 @@ class CheckoutController extends Controller
 
     public function payWithPayPal(Request $r, CheckoutService $svc) {
         [$order, $amount] = $svc->createPendingOrder($r);
-        $pp = new PayPalClient;
-        $pp->setApiCredentials(config('paypal'));
+        $pp = app()->bound(PayPalClient::class) ? app(PayPalClient::class) : tap(new PayPalClient, function ($pp) {
+            $pp->setApiCredentials(config('paypal'));
+        });
         $pp->getAccessToken();
         $resp = $pp->createOrder([
             'intent' => 'CAPTURE',
