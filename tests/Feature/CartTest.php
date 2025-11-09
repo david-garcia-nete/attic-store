@@ -56,6 +56,26 @@ class CartTest extends TestCase
         $this->assertEquals(9.99, (float)$item->unit_price, 'Falls back to product price when variant price null');
     }
 
+    public function test_cart_view_renders_with_totals(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $cart = Cart::factory()->create(['user_id' => $user->id, 'session_id' => null]);
+        $variant = ProductVariant::factory()->for(Product::factory(['price' => 10]))->create(['price' => 12]);
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 2,
+            'unit_price' => 12.00,
+        ]);
+
+        $resp = $this->get(route('cart.view'));
+        $resp->assertOk();
+        $resp->assertSee('Your Cart');
+        $resp->assertSee(number_format(24.00, 2));
+    }
+
     public function test_remove_item_from_cart(): void
     {
         $user = \App\Models\User::factory()->create();
@@ -73,6 +93,34 @@ class CartTest extends TestCase
         $response = $this->delete(route('cart.remove', ['item' => $item->id]));
         $response->assertRedirect(route('cart.view'));
         $this->assertDatabaseMissing('cart_items', ['id' => $item->id]);
+    }
+
+    public function test_remove_item_returns_404_if_item_not_in_cart(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $cart = Cart::factory()->create(['user_id' => $user->id, 'session_id' => null]);
+
+        $otherCart = Cart::factory()->create();
+        $variant = ProductVariant::factory()->for(Product::factory())->create();
+        $item = CartItem::factory()->create([
+            'cart_id' => $otherCart->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+            'unit_price' => 5.00,
+        ]);
+
+        $this->delete(route('cart.remove', ['item' => $item->id]))->assertNotFound();
+    }
+
+    public function test_apply_discount_post_redirects_back_with_status(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $this->from(route('cart.view'))
+            ->post(route('cart.discount'))
+            ->assertRedirect(route('cart.view'))
+            ->assertSessionHas('ok', 'Discounts stubbed for MVP.');
     }
 
     public function test_adding_inactive_variant_still_adds_item_current_behavior(): void
