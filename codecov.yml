@@ -1,0 +1,10 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 90       # overall project target
+    patch:
+      default:
+        target: 70       # or whatever you’re comfortable with
+        threshold: 5     # allow small drops
+        informational: true  # don't fail the check, just warn
