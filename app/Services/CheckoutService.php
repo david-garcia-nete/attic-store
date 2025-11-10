@@ -11,8 +11,14 @@ class CheckoutService
 {
     public function createPendingOrder(Request $r): array
     {
-        $cart = app(CartService::class)->resolve($r)->load('items.variant.inventory','items.variant.product');
-        $totals = app(CartService::class)->totals($cart);
+        $cartService = app(CartService::class);
+        $cart = $cartService->resolve($r)->load('items.variant.inventory','items.variant.product');
+
+        if ($cart->items->isEmpty()) {
+            throw new \RuntimeException('Your cart is empty.');
+        }
+
+        $totals = $cartService->totals($cart);
 
         $order = Order::create([
             'number' => strtoupper(Str::random(10)),

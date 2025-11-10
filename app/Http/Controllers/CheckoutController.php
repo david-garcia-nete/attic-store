@@ -3,25 +3,44 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\CheckoutService;
+use App\Services\{CheckoutService, CartService};
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 use Stripe\StripeClient;
 use App\Models\Order;
 
 class CheckoutController extends Controller
 {
-    public function start(Request $r) {
-        return view('checkout/start');
+    public function start(Request $r, CartService $svc) {
+        $cart = $svc->resolve($r)->load('items.variant.product');
+
+        if ($cart->items->isEmpty()) {
+            return redirect()->route('cart.view')->with('ok', 'Add items to your cart before checking out.');
+        }
+
+        $totals = $svc->totals($cart);
+
+        return view('checkout/start', compact('cart', 'totals'));
     }
 
-    public function shipQuote(Request $r) {
-        $oz = (int) $r->input('weight_oz', 12);
-        $rate = $oz <= 8 ? 4.99 : ($oz <= 16 ? 6.49 : 8.99);
-        return response()->json(['rate'=>$rate]);
+    public function shipQuote(Request $r, CartService $svc) {
+        $cart = $svc->resolve($r)->load('items.variant');
+        $weightFromCart = (int) round($cart->items->sum(function ($item) {
+            $weight = $item->variant->weight_oz ?? 12;
+            return $weight * $item->quantity;
+        }));
+
+        $weight = (int) $r->input('weight_oz', $weightFromCart);
+        $rate = $svc->shippingQuoteFor($weight);
+
+        return response()->json(['rate' => round($rate, 2)]);
     }
 
     public function payWithStripe(Request $r, CheckoutService $svc) {
-        [$order, $amount] = $svc->createPendingOrder($r);
+        try {
+            [$order, $amount] = $svc->createPendingOrder($r);
+        } catch (\RuntimeException $e) {
+            return redirect()->route('cart.view')->withErrors(['cart' => $e->getMessage()]);
+        }
         $stripe = app()->bound(StripeClient::class)
             ? app(StripeClient::class)
             : new StripeClient(config('cashier.secret', env('STRIPE_SECRET')));
@@ -38,7 +57,11 @@ class CheckoutController extends Controller
     }
 
     public function payWithPayPal(Request $r, CheckoutService $svc) {
-        [$order, $amount] = $svc->createPendingOrder($r);
+        try {
+            [$order, $amount] = $svc->createPendingOrder($r);
+        } catch (\RuntimeException $e) {
+            return redirect()->route('cart.view')->withErrors(['cart' => $e->getMessage()]);
+        }
         $pp = app()->bound(PayPalClient::class) ? app(PayPalClient::class) : tap(new PayPalClient, function ($pp) {
             $pp->setApiCredentials(config('paypal'));
         });
@@ -54,6 +77,7 @@ class CheckoutController extends Controller
     }
 
     public function thankYou(Order $order) {
+        $order->load('items.variant.product');
         return view('checkout/thankyou', compact('order'));
     }
 }

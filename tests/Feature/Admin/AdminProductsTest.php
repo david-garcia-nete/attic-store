@@ -18,12 +18,12 @@ class AdminProductsTest extends TestCase
 
         // Define minimal product admin routes just for testing
         Route::middleware('web')->group(function () {
-            Route::get('/admin/products', [ProductController::class, 'index'])->name('products.index');
-            Route::get('/admin/products/create', [ProductController::class, 'create'])->name('products.create');
-            Route::post('/admin/products', [ProductController::class, 'store'])->name('products.store');
-            Route::get('/admin/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-            Route::patch('/admin/products/{product}', [ProductController::class, 'update'])->name('products.update');
-            Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+            Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products.index');
+            Route::get('/admin/products/create', [ProductController::class, 'create'])->name('admin.products.create');
+            Route::post('/admin/products', [ProductController::class, 'store'])->name('admin.products.store');
+            Route::get('/admin/products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
+            Route::patch('/admin/products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
+            Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
         });
     }
 
@@ -46,7 +46,7 @@ class AdminProductsTest extends TestCase
 
     public function test_create_screen_renders(): void
     {
-        $resp = $this->get(route('products.create'));
+        $resp = $this->get(route('admin.products.create'));
         $resp->assertOk();
         $resp->assertSee('Create Product');
     }
@@ -55,7 +55,7 @@ class AdminProductsTest extends TestCase
     {
         $product = Product::factory()->create(['name' => 'Sample Item']);
 
-        $resp = $this->get(route('products.edit', $product));
+        $resp = $this->get(route('admin.products.edit', $product));
         $resp->assertOk();
         $resp->assertSee('Edit Product');
         $resp->assertSee('Sample Item');
@@ -70,7 +70,7 @@ class AdminProductsTest extends TestCase
             'description' => 'A shiny new product.',
         ];
 
-        $resp = $this->post(route('products.store'), $payload);
+        $resp = $this->post(route('admin.products.store'), $payload);
         $resp->assertRedirect();
 
         $this->assertDatabaseHas('products', [
@@ -80,7 +80,7 @@ class AdminProductsTest extends TestCase
         ]);
 
         $product = Product::where('slug', 'new-product-1234')->firstOrFail();
-        $resp->assertRedirectToRoute('products.edit', $product);
+        $resp->assertRedirectToRoute('admin.products.edit', $product);
     }
 
     public function test_update_modifies_fields_and_redirects_back(): void
@@ -101,10 +101,10 @@ class AdminProductsTest extends TestCase
         ];
 
         // Provide a referer so back() knows where to go
-        $resp = $this->from(route('products.edit', $product))
-            ->patch(route('products.update', $product), $payload);
+        $resp = $this->from(route('admin.products.edit', $product))
+            ->patch(route('admin.products.update', $product), $payload);
 
-        $resp->assertRedirect(route('products.edit', $product));
+        $resp->assertRedirect(route('admin.products.edit', $product));
 
         $this->assertDatabaseHas('products', [
             'id' => $product->id,
@@ -120,9 +120,9 @@ class AdminProductsTest extends TestCase
     {
         $product = Product::factory()->create();
 
-        $resp = $this->delete(route('products.destroy', $product));
+        $resp = $this->delete(route('admin.products.destroy', $product));
 
-        $resp->assertRedirectToRoute('products.index');
+        $resp->assertRedirectToRoute('admin.products.index');
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
 }

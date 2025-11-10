@@ -74,9 +74,13 @@ class CartServiceTest extends TestCase
         $svc->add($cart, $v1, 2); // 2 * 6 = 12
         $svc->add($cart, $v2, 3); // 3 * 5.5 = 16.5
 
-        $totals = $svc->totals($cart->load('items'));
+        $totals = $svc->totals($cart->load('items.variant'));
         $this->assertEquals(28.5, (float)$totals['subtotal']);
         $this->assertEquals(0.0, (float)$totals['discount_total']);
-        $this->assertEquals(28.5, (float)$totals['grand_total']);
+        $this->assertGreaterThan(0, $totals['shipping_total']);
+        $this->assertEquals(round(0.07 * 28.5, 2), round($totals['tax_total'], 2));
+        $expectedGrand = round(28.5 - 0.0 + $totals['shipping_total'] + $totals['tax_total'], 2);
+        $this->assertEquals($expectedGrand, (float)$totals['grand_total']);
+        $this->assertSame(60, $totals['total_weight_oz']);
     }
 }

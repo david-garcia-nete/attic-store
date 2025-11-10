@@ -9,7 +9,7 @@
     <td class="p-2">{{ $o->status }}</td>
     <td class="p-2">${{ number_format($o->grand_total,2) }}</td>
     <td class="p-2">{{ $o->created_at->format('Y-m-d H:i') }}</td>
-    <td class="p-2"><a class="text-blue-600" href="{{ route('orders.show',$o) }}">View</a></td>
+    <td class="p-2"><a class="text-blue-600" href="{{ route('admin.orders.show',$o) }}">View</a></td>
   </tr>
   @endforeach
 </table>
