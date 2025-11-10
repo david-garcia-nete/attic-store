@@ -25,7 +25,7 @@ class CheckoutServiceTest extends TestCase
         $user = User::factory()->create();
 
         $product = Product::factory()->create(['price' => 10.00]);
-        $variant = ProductVariant::factory()->for($product)->create(['price' => 12.00]);
+        $variant = ProductVariant::factory()->for($product)->create(['price' => 12.00, 'weight_oz' => 10]);
         $inv = Inventory::factory()->create([
             'product_variant_id' => $variant->id,
             'qty_on_hand' => 100,
@@ -58,6 +58,10 @@ class CheckoutServiceTest extends TestCase
         $this->assertEquals($variant->id, $item->product_variant_id);
         $this->assertEquals(3, (int)$item->quantity);
         $this->assertEquals(36.00, (float)$item->line_total);
+        $this->assertEquals(0.0, (float)$order->discount_total);
+        $this->assertEquals(8.99, (float)$order->shipping_total);
+        $this->assertEquals(2.52, (float)$order->tax_total);
+        $this->assertEquals(47.51, (float)$order->grand_total);
 
         $inv->refresh();
         $this->assertEquals(3, (int)$inv->qty_reserved, 'Inventory should be reserved');

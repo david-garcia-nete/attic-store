@@ -2,41 +2,26 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\OrderFulfillmentController;
 use App\Models\Inventory;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class AdminOrdersTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Route::middleware('web')->group(function () {
-            Route::get('/admin/orders', [OrderController::class, 'index'])->name('orders.index');
-            Route::get('/admin/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-            Route::post('/admin/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
-            Route::post('/admin/orders/{order}/fulfill', [OrderFulfillmentController::class, 'fulfill'])->name('admin.orders.fulfill');
-        });
-    }
-
     public function test_index_lists_orders(): void
     {
         $orders = Order::factory()->count(3)->create();
 
-        $resp = $this->get(route('orders.index'));
+        $resp = $this->get(route('admin.orders.index'));
         $resp->assertOk();
         foreach ($orders as $o) {
             $resp->assertSee($o->number);
+            $resp->assertSee('$' . number_format($o->grand_total, 2));
         }
     }
 
@@ -56,12 +41,12 @@ class AdminOrdersTest extends TestCase
             'bin_snapshot' => $inventory->bin_location,
         ]);
 
-        $resp = $this->get(route('orders.show', $order));
+        $resp = $this->get(route('admin.orders.show', $order));
         $resp->assertOk();
         $resp->assertSee('Order ' . $order->number);
         $resp->assertSee('Widget');
         $resp->assertSee('WID-001');
-        $resp->assertSee('25.00');
+        $resp->assertSee('$25.00');
         $resp->assertSee('A01-B02');
     }
 
@@ -70,7 +55,7 @@ class AdminOrdersTest extends TestCase
         $order = Order::factory()->create(['status' => 'pending']);
 
         $resp = $this->from('/admin/orders')
-            ->post(route('orders.update', $order), ['status' => 'paid']);
+            ->post(route('admin.orders.update', $order), ['status' => 'paid']);
 
         $resp->assertRedirect('/admin/orders');
         $this->assertSame('paid', $order->fresh()->status);
@@ -93,10 +78,10 @@ class AdminOrdersTest extends TestCase
             'bin_snapshot' => $inventory->bin_location,
         ]);
 
-        $resp = $this->from(route('orders.show', $order))
+        $resp = $this->from(route('admin.orders.show', $order))
             ->post(route('admin.orders.fulfill', $order));
 
-        $resp->assertRedirect(route('orders.show', $order));
+        $resp->assertRedirect(route('admin.orders.show', $order));
 
         $inventory->refresh();
         $this->assertSame(8, (int) $inventory->qty_on_hand);

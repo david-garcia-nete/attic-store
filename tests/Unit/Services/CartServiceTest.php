@@ -68,15 +68,25 @@ class CartServiceTest extends TestCase
         $cart = $svc->resolve(request());
 
         $product = Product::factory()->create(['price' => 5.50]);
-        $v1 = ProductVariant::factory()->for($product)->create(['price' => 6.00]);
-        $v2 = ProductVariant::factory()->for($product)->create(['price' => null]);
+        $v1 = ProductVariant::factory()->for($product)->create([
+            'price' => 6.00,
+            'weight_oz' => 10,
+        ]);
+        $v2 = ProductVariant::factory()->for($product)->create([
+            'price' => null,
+            'weight_oz' => 5,
+        ]);
 
         $svc->add($cart, $v1, 2); // 2 * 6 = 12
         $svc->add($cart, $v2, 3); // 3 * 5.5 = 16.5
 
-        $totals = $svc->totals($cart->load('items'));
+        $totals = $svc->totals($cart->load('items.variant'));
         $this->assertEquals(28.5, (float)$totals['subtotal']);
         $this->assertEquals(0.0, (float)$totals['discount_total']);
-        $this->assertEquals(28.5, (float)$totals['grand_total']);
+        $this->assertEquals(8.99, (float)$totals['shipping_total']);
+        $this->assertEquals(round(0.07 * 28.5, 2), round($totals['tax_total'], 2));
+        $expectedGrand = round(28.5 - 0.0 + $totals['shipping_total'] + $totals['tax_total'], 2);
+        $this->assertEquals($expectedGrand, (float)$totals['grand_total']);
+        $this->assertSame(35, $totals['total_weight_oz']);
     }
 }
