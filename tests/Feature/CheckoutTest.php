@@ -28,16 +28,27 @@ class CheckoutTest extends TestCase
         $order = Order::create([
             'number' => strtoupper(Str::random(10)),
             'user_id' => null,
-            'subtotal' => 10.00,
-            'discount_total' => 0.00,
-            'shipping_total' => 0.00,
-            'tax_total' => 0.00,
-            'grand_total' => 10.00,
+            'subtotal' => 30.00,
+            'discount_total' => 5.00,
+            'shipping_total' => 6.49,
+            'tax_total' => 1.75,
+            'grand_total' => 33.24,
             'status' => 'pending',
+        ]);
+        $product = \App\Models\Product::factory()->create(['name' => 'Handmade Tote']);
+        $variant = \App\Models\ProductVariant::factory()->for($product)->create(['sku' => 'TOTE-01', 'price' => 25]);
+        $order->items()->create([
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+            'unit_price' => 25,
+            'line_total' => 25,
+            'bin_snapshot' => 'B02-C03',
         ]);
 
         $resp = $this->get(route('checkout.thankyou', ['order' => $order->id]));
         $resp->assertOk();
         $resp->assertSee($order->number);
+        $resp->assertSee('Handmade Tote');
+        $resp->assertSee('$33.24');
     }
 }
