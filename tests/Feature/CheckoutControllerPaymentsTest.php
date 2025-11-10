@@ -2,14 +2,28 @@
 
 namespace Tests\Feature;
 
-use App\Models\Order;
-use App\Models\Payment;
+use App\Models\{Cart, Inventory, Order, Payment, Product, ProductVariant, User};
+use App\Services\CartService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CheckoutControllerPaymentsTest extends TestCase
 {
     use RefreshDatabase;
+
+    private function seedCartFor(User $user): void
+    {
+        $product = Product::factory()->create(['name' => 'Limited Pressing', 'price' => 30]);
+        $variant = ProductVariant::factory()->for($product)->create(['price' => 28.00, 'weight_oz' => 7, 'sku' => 'VINYL-001']);
+        $inventory = Inventory::factory()->for($variant, 'variant')->create([
+            'qty_on_hand' => 5,
+            'qty_reserved' => 0,
+            'bin_location' => 'A01-B02',
+        ]);
+        $cart = Cart::factory()->create(['user_id' => $user->id, 'session_id' => null]);
+
+        app(CartService::class)->add($cart, $variant, 2);
+    }
 
     private function bindFakeStripe(): void
     {
@@ -55,9 +69,11 @@ class CheckoutControllerPaymentsTest extends TestCase
 
     public function test_pay_with_stripe_creates_payment_and_renders_view(): void
     {
+        $user = User::factory()->create();
+        $this->seedCartFor($user);
         $this->bindFakeStripe();
 
-        $resp = $this->post(route('checkout.stripe'), [
+        $resp = $this->actingAs($user)->post(route('checkout.stripe'), [
             'ship_name' => 'Ada Lovelace',
             'ship_line1' => '123 Code St',
             'ship_city' => 'Math',
@@ -68,6 +84,7 @@ class CheckoutControllerPaymentsTest extends TestCase
         $resp->assertOk();
         $resp->assertViewIs('checkout.stripe');
         $resp->assertViewHasAll(['clientSecret', 'order']);
+        $resp->assertSee('Pay with Stripe');
 
         $this->assertDatabaseHas('payments', [
             'provider' => 'stripe',
@@ -77,9 +94,11 @@ class CheckoutControllerPaymentsTest extends TestCase
 
     public function test_pay_with_paypal_redirects_to_approve_and_records_payment(): void
     {
+        $user = User::factory()->create();
+        $this->seedCartFor($user);
         $this->bindFakePayPal();
 
-        $resp = $this->post(route('checkout.paypal'), [
+        $resp = $this->actingAs($user)->post(route('checkout.paypal'), [
             'ship_name' => 'Grace Hopper',
         ]);
 
@@ -94,10 +113,24 @@ class CheckoutControllerPaymentsTest extends TestCase
 
     public function test_thank_you_page_renders(): void
     {
-        $order = Order::factory()->create();
+        $order = Order::factory()->create(['subtotal' => 50.00, 'shipping_total' => 8.99, 'tax_total' => 3.50, 'grand_total' => 62.49]);
+        $product = Product::factory()->create(['name' => 'Mystery Bundle']);
+        $variant = ProductVariant::factory()->for($product)->create(['sku' => 'BNDL-001']);
+        $order->items()->create([
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+            'unit_price' => 50.00,
+            'line_total' => 50.00,
+            'bin_snapshot' => 'B01-C03',
+        ]);
         $this->get(route('checkout.thankyou', ['order' => $order->id]))
             ->assertOk()
-            ->assertSee('Thank you')
-            ->assertSee($order->number);
+            ->assertSee('Thank you!')
+            ->assertSee($order->number)
+            ->assertSee('Mystery Bundle')
+            ->assertSee('$50.00')
+            ->assertSee('$8.99')
+            ->assertSee('$3.50')
+            ->assertSee('$62.49');
     }
 }

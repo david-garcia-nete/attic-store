@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Cart, CartItem, Product, ProductVariant, User};
+use App\Models\{Cart, CartItem, Inventory, Product, ProductVariant, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -62,7 +62,9 @@ class CartTest extends TestCase
         $this->actingAs($user);
 
         $cart = Cart::factory()->create(['user_id' => $user->id, 'session_id' => null]);
-        $variant = ProductVariant::factory()->for(Product::factory(['price' => 10]))->create(['price' => 12]);
+        $variant = ProductVariant::factory()
+            ->for(Product::factory(['price' => 10]))
+            ->create(['price' => 12, 'weight_oz' => 10]);
         CartItem::factory()->create([
             'cart_id' => $cart->id,
             'product_variant_id' => $variant->id,
@@ -70,10 +72,23 @@ class CartTest extends TestCase
             'unit_price' => 12.00,
         ]);
 
+        session(['cart_discount' => [
+            'code' => 'SAVE10',
+            'type' => 'pct',
+            'value' => 10,
+            'label' => '10% off your order',
+        ]]);
+
         $resp = $this->get(route('cart.view'));
         $resp->assertOk();
         $resp->assertSee('Your Cart');
-        $resp->assertSee(number_format(24.00, 2));
+        $resp->assertSee('$24.00');
+        $resp->assertSee('10% off your order');
+        $resp->assertSee('-$2.40');
+        $resp->assertSee('$8.99');
+        $resp->assertSee('$1.51');
+        $resp->assertSee('$32.10');
+        $resp->assertSee('Cart weight: 20 oz');
     }
 
     public function test_remove_item_from_cart(): void
@@ -113,14 +128,41 @@ class CartTest extends TestCase
         $this->delete(route('cart.remove', ['item' => $item->id]))->assertNotFound();
     }
 
-    public function test_apply_discount_post_redirects_back_with_status(): void
+    public function test_apply_discount_code_success(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
         $this->from(route('cart.view'))
-            ->post(route('cart.discount'))
+            ->post(route('cart.discount'), ['code' => 'SAVE10'])
             ->assertRedirect(route('cart.view'))
-            ->assertSessionHas('ok', 'Discounts stubbed for MVP.');
+            ->assertSessionHas('ok', 'Discount applied!');
+
+        $this->assertEquals('SAVE10', session('cart_discount.code'));
+    }
+
+    public function test_apply_discount_invalid_code_shows_error(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $this->from(route('cart.view'))
+            ->post(route('cart.discount'), ['code' => 'not-real'])
+            ->assertRedirect(route('cart.view'))
+            ->assertSessionHasErrors('code');
+    }
+
+    public function test_remove_discount_clears_session(): void
+    {
+        session(['cart_discount' => ['code' => 'SAVE10']]);
+
+        $user = User::factory()->create();
+        $this->actingAs($user)
+            ->from(route('cart.view'))
+            ->post(route('cart.discount'), ['remove' => 1])
+            ->assertRedirect(route('cart.view'))
+            ->assertSessionHas('ok', 'Discount removed.');
+
+        $this->assertNull(session('cart_discount'));
     }
 
     public function test_adding_inactive_variant_still_adds_item_current_behavior(): void
@@ -139,5 +181,27 @@ class CartTest extends TestCase
             'product_variant_id' => $variant->id,
             'quantity' => 1,
         ]);
+    }
+
+    public function test_cannot_add_more_than_available_inventory(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+        $variant = ProductVariant::factory()->for($product)->create();
+        Inventory::factory()->for($variant, 'variant')->create([
+            'qty_on_hand' => 5,
+            'qty_reserved' => 1,
+        ]);
+
+        $this->actingAs($user)
+            ->from(route('cart.view'))
+            ->post(route('cart.add'), [
+                'variant_id' => $variant->id,
+                'quantity' => 5,
+            ])
+            ->assertRedirect(route('cart.view'))
+            ->assertSessionHasErrors('quantity');
+
+        $this->assertDatabaseMissing('cart_items', ['product_variant_id' => $variant->id]);
     }
 }
