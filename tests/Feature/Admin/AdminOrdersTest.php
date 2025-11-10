@@ -2,32 +2,16 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\OrderFulfillmentController;
 use App\Models\Inventory;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class AdminOrdersTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Route::middleware('web')->group(function () {
-            Route::get('/admin/orders', [OrderController::class, 'index'])->name('admin.orders.index');
-            Route::get('/admin/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
-            Route::post('/admin/orders/{order}', [OrderController::class, 'update'])->name('admin.orders.update');
-            Route::post('/admin/orders/{order}/fulfill', [OrderFulfillmentController::class, 'fulfill'])->name('admin.orders.fulfill');
-        });
-    }
 
     public function test_index_lists_orders(): void
     {
@@ -37,6 +21,7 @@ class AdminOrdersTest extends TestCase
         $resp->assertOk();
         foreach ($orders as $o) {
             $resp->assertSee($o->number);
+            $resp->assertSee('$' . number_format($o->grand_total, 2));
         }
     }
 
@@ -61,7 +46,7 @@ class AdminOrdersTest extends TestCase
         $resp->assertSee('Order ' . $order->number);
         $resp->assertSee('Widget');
         $resp->assertSee('WID-001');
-        $resp->assertSee('25.00');
+        $resp->assertSee('$25.00');
         $resp->assertSee('A01-B02');
     }
 

@@ -8,22 +8,11 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class AdminDashboardTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Register a minimal route for the dashboard for testing
-        Route::middleware('web')->group(function () {
-            Route::get('/admin', [DashboardController::class, 'index'])->name('admin.dashboard');
-        });
-    }
 
     public function test_dashboard_displays_key_metrics(): void
     {
@@ -51,7 +40,7 @@ class AdminDashboardTest extends TestCase
         $resp->assertSee("Today's Orders: 3", false);
         $resp->assertSee("Today's Revenue: $" . number_format(50.25 + 20.00 + 15.75, 2), false);
         // Unfulfilled counts paid + pending across all time (2 from today + 1 past)
-        $resp->assertSeeText('Unfulfilled: 3');
-        $resp->assertSeeText('Low Stock: 2');
+        $resp->assertSee("Unfulfilled: 3", false);
+        $resp->assertSee("Low Stock: 2", false);
     }
 }

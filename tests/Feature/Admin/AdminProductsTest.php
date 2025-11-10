@@ -2,30 +2,14 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Http\Controllers\Admin\ProductController;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class AdminProductsTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Define minimal product admin routes just for testing
-        Route::middleware('web')->group(function () {
-            Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products.index');
-            Route::get('/admin/products/create', [ProductController::class, 'create'])->name('admin.products.create');
-            Route::post('/admin/products', [ProductController::class, 'store'])->name('admin.products.store');
-            Route::get('/admin/products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
-            Route::patch('/admin/products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
-            Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
-        });
-    }
 
     public function test_index_lists_products(): void
     {
@@ -40,8 +24,8 @@ class AdminProductsTest extends TestCase
         $resp->assertSee('Widget B');
         $resp->assertSee(number_format(3.49, 2));
         // Ensure the view rendered links
-        $resp->assertSee('/admin/products/create', false);
-        $resp->assertSee('/admin/products/'.$p1->id.'/edit', false);
+        $resp->assertSee(route('admin.products.create'), false);
+        $resp->assertSee(route('admin.products.edit', $p1), false);
     }
 
     public function test_create_screen_renders(): void
@@ -49,16 +33,21 @@ class AdminProductsTest extends TestCase
         $resp = $this->get(route('admin.products.create'));
         $resp->assertOk();
         $resp->assertSee('Create Product');
+        $resp->assertSee('Use this screen to add a new product.', false);
     }
 
     public function test_edit_screen_renders_with_product_name(): void
     {
         $product = Product::factory()->create(['name' => 'Sample Item']);
+        $category = ProductCategory::create(['name' => 'Vinyl', 'slug' => 'vinyl']);
+        $product->categories()->attach($category);
 
         $resp = $this->get(route('admin.products.edit', $product));
         $resp->assertOk();
         $resp->assertSee('Edit Product');
+        $resp->assertSee('Editing:', false);
         $resp->assertSee('Sample Item');
+        $resp->assertSee('Vinyl');
     }
 
     public function test_store_creates_product_and_redirects_to_edit(): void
@@ -77,6 +66,7 @@ class AdminProductsTest extends TestCase
             'name' => 'New Product',
             'slug' => 'new-product-1234',
             'price' => 19.99,
+            'is_active' => true,
         ]);
 
         $product = Product::where('slug', 'new-product-1234')->firstOrFail();
@@ -114,6 +104,21 @@ class AdminProductsTest extends TestCase
             'description' => 'Updated desc',
             'is_active' => false,
         ]);
+    }
+
+    public function test_store_requires_unique_slug(): void
+    {
+        Product::factory()->create(['slug' => 'duplicate-slug']);
+
+        $resp = $this->from(route('admin.products.create'))
+            ->post(route('admin.products.store'), [
+                'name' => 'Another Product',
+                'slug' => 'duplicate-slug',
+                'price' => 10.00,
+            ]);
+
+        $resp->assertRedirect(route('admin.products.create'));
+        $resp->assertSessionHasErrors('slug');
     }
 
     public function test_destroy_deletes_and_redirects_to_index(): void
